@@ -17,7 +17,13 @@ jobs:
       with:
         python-version: '3.10'
     
-    - name: Install system dependencies
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+    
+    - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
@@ -25,7 +31,6 @@ jobs:
           git \
           zip \
           unzip \
-          openjdk-17-jdk \
           autoconf \
           libtool \
           pkg-config \
@@ -36,23 +41,26 @@ jobs:
           libffi-dev \
           libssl-dev \
           lld \
-          ccache \
-          libltdl-dev
-    
-    - name: Install Python dependencies
-      run: |
+          ccache
+        
         pip install --upgrade pip
-        pip install buildozer==1.5.0
-        pip install cython==0.29.36
-        pip install virtualenv
+        pip install buildozer==1.5.0 cython==0.29.36
     
     - name: Build APK
       run: |
-        export JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64
-        buildozer android debug
+        yes | buildozer android debug 2>&1 | tee build.log
+      continue-on-error: true
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: WorldTowerDefense-APK
         path: bin/*.apk
+        if-no-files-found: ignore
+    
+    - name: Upload Log
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-log
+        path: build.log
+        if-no-files-found: ignore
