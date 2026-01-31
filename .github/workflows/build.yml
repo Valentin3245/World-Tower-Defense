@@ -23,44 +23,38 @@ jobs:
         distribution: 'temurin'
         java-version: '17'
     
+    - name: Create icon if missing
+      run: |
+        if [ ! -f icon.png ]; then
+          python3 -c "
+from PIL import Image, ImageDraw
+img = Image.new('RGB', (512, 512), '#1a1a2e')
+draw = ImageDraw.Draw(img)
+draw.ellipse([50, 50, 462, 462], fill='#e94560')
+img.save('icon.png')
+print('icon.png created')
+"
+        fi
+    
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y \
-          build-essential \
-          git \
-          zip \
-          unzip \
-          autoconf \
-          libtool \
-          pkg-config \
-          zlib1g-dev \
-          libncurses5-dev \
-          libncursesw5-dev \
-          cmake \
-          libffi-dev \
-          libssl-dev \
-          lld \
-          ccache
+          build-essential git zip unzip \
+          autoconf libtool pkg-config \
+          zlib1g-dev libncurses5-dev libncursesw5-dev \
+          cmake libffi-dev libssl-dev lld ccache
         
         pip install --upgrade pip
+        pip install pillow
         pip install buildozer==1.5.0 cython==0.29.36
     
     - name: Build APK
       run: |
-        yes | buildozer android debug 2>&1 | tee build.log
-      continue-on-error: true
+        yes | buildozer android debug
     
     - name: Upload APK
       uses: actions/upload-artifact@v4
       with:
         name: WorldTowerDefense-APK
         path: bin/*.apk
-        if-no-files-found: ignore
-    
-    - name: Upload Log
-      uses: actions/upload-artifact@v4
-      with:
-        name: build-log
-        path: build.log
-        if-no-files-found: ignore
