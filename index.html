@@ -1,31 +1,197 @@
-<div class="container">
-    <header>
-        <h1>🎮 Meu App</h1>
-        <p>Versão 1.0</p>
-    </header>
-
-    <main>
-        <div class="card">
-            <h2>Bem-vindo!</h2>
-            <p>Este conteúdo é carregado do GitHub.</p>
-            <p>Edite este arquivo no GitHub e o app será atualizado automaticamente!</p>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>World Tower Defense</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    
+    <!-- TELA DE LOADING -->
+    <div id="loading-screen" class="screen active">
+        <div class="loading-content">
+            <div class="logo-container">
+                <div class="logo-icon">🏰</div>
+                <h1 class="logo-text">World Tower Defense</h1>
+            </div>
+            
+            <div class="loading-bar-container">
+                <div class="loading-bar">
+                    <div class="loading-progress" id="loading-progress"></div>
+                </div>
+                <p class="loading-text" id="loading-text">Carregando recursos...</p>
+            </div>
+            
+            <div class="loading-tips">
+                <p id="tip-text">💡 Dica: Posicione suas torres estrategicamente!</p>
+            </div>
         </div>
-
-        <div class="card">
-            <h2>🎯 Como funciona:</h2>
-            <ul>
-                <li>✅ Com internet: baixa versão nova</li>
-                <li>📴 Sem internet: usa versão salva</li>
-                <li>🔄 Atualize só o GitHub!</li>
-            </ul>
-        </div>
-
-        <button onclick="mostrarMensagem()">Clique Aqui!</button>
         
-        <div id="mensagem"></div>
-    </main>
+        <div class="particles" id="particles"></div>
+    </div>
+    
+    <!-- TELA DE MENU / PLAY -->
+    <div id="menu-screen" class="screen">
+        <div class="menu-background"></div>
+        
+        <div class="menu-content">
+            <div class="menu-logo">
+                <div class="menu-icon">🏰</div>
+                <h1>World Tower Defense</h1>
+                <p class="menu-subtitle">Defenda seu reino!</p>
+            </div>
+            
+            <div class="menu-buttons">
+                <button class="menu-btn play-btn" onclick="startGame()">
+                    <span class="btn-icon">▶️</span>
+                    <span class="btn-text">JOGAR</span>
+                </button>
+                
+                <button class="menu-btn" onclick="openShop()">
+                    <span class="btn-icon">🛒</span>
+                    <span class="btn-text">LOJA</span>
+                </button>
+                
+                <button class="menu-btn" onclick="openSettings()">
+                    <span class="btn-icon">⚙️</span>
+                    <span class="btn-text">OPÇÕES</span>
+                </button>
+            </div>
+            
+            <div class="menu-stats">
+                <div class="stat-item">
+                    <span class="stat-icon">🏆</span>
+                    <span class="stat-value" id="high-score">0</span>
+                    <span class="stat-label">Recorde</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">💎</span>
+                    <span class="stat-value" id="gems">100</span>
+                    <span class="stat-label">Gemas</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-icon">⭐</span>
+                    <span class="stat-value" id="level">1</span>
+                    <span class="stat-label">Nível</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="floating-castles">
+            <div class="castle castle-1">🏯</div>
+            <div class="castle castle-2">🗼</div>
+            <div class="castle castle-3">⛪</div>
+        </div>
+    </div>
+    
+    <!-- TELA DO JOGO -->
+    <div id="game-screen" class="screen">
+        <div class="game-header">
+            <div class="game-stat">
+                <span>❤️</span>
+                <span id="game-life">100</span>
+            </div>
+            <div class="game-stat">
+                <span>💰</span>
+                <span id="game-gold">500</span>
+            </div>
+            <div class="game-stat">
+                <span>🌊</span>
+                <span>Wave: <span id="game-wave">1</span></span>
+            </div>
+            <button class="pause-btn" onclick="pauseGame()">⏸️</button>
+        </div>
+        
+        <div class="game-area" id="game-area">
+            <div class="game-message" id="game-message">
+                Selecione uma torre e toque no mapa para posicionar!
+            </div>
+        </div>
+        
+        <div class="game-footer">
+            <div class="towers-bar">
+                <button class="tower-btn" onclick="selectTower('archer')" id="tower-archer">
+                    <span class="tower-icon">🏹</span>
+                    <span class="tower-price">💰100</span>
+                </button>
+                <button class="tower-btn" onclick="selectTower('mage')" id="tower-mage">
+                    <span class="tower-icon">🧙</span>
+                    <span class="tower-price">💰150</span>
+                </button>
+                <button class="tower-btn" onclick="selectTower('cannon')" id="tower-cannon">
+                    <span class="tower-icon">💣</span>
+                    <span class="tower-price">💰200</span>
+                </button>
+                <button class="tower-btn" onclick="selectTower('ice')" id="tower-ice">
+                    <span class="tower-icon">❄️</span>
+                    <span class="tower-price">💰175</span>
+                </button>
+            </div>
+            
+            <button class="start-wave-btn" onclick="startWave()" id="start-wave-btn">
+                ⚔️ INICIAR WAVE
+            </button>
+        </div>
+    </div>
+    
+    <!-- MODAL DE PAUSE -->
+    <div id="pause-modal" class="modal">
+        <div class="modal-content">
+            <h2>⏸️ Pausado</h2>
+            <button class="modal-btn" onclick="resumeGame()">▶️ Continuar</button>
+            <button class="modal-btn" onclick="restartGame()">🔄 Reiniciar</button>
+            <button class="modal-btn" onclick="goToMenu()">🏠 Menu</button>
+        </div>
+    </div>
+    
+    <!-- MODAL DE LOJA -->
+    <div id="shop-modal" class="modal">
+        <div class="modal-content shop-content">
+            <h2>🛒 Loja</h2>
+            <div class="shop-items">
+                <div class="shop-item" onclick="buyItem('gold')">
+                    <span class="shop-icon">💰</span>
+                    <span class="shop-name">500 Ouro</span>
+                    <span class="shop-price">💎 50</span>
+                </div>
+                <div class="shop-item" onclick="buyItem('life')">
+                    <span class="shop-icon">❤️</span>
+                    <span class="shop-name">+50 Vida</span>
+                    <span class="shop-price">💎 30</span>
+                </div>
+                <div class="shop-item" onclick="buyItem('power')">
+                    <span class="shop-icon">⚡</span>
+                    <span class="shop-name">2x Dano</span>
+                    <span class="shop-price">💎 100</span>
+                </div>
+            </div>
+            <button class="modal-btn close-btn" onclick="closeShop()">✖️ Fechar</button>
+        </div>
+    </div>
+    
+    <!-- MODAL DE OPÇÕES -->
+    <div id="settings-modal" class="modal">
+        <div class="modal-content">
+            <h2>⚙️ Opções</h2>
+            <div class="setting-item">
+                <span>🔊 Som</span>
+                <label class="switch">
+                    <input type="checkbox" id="sound-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-item">
+                <span>📳 Vibração</span>
+                <label class="switch">
+                    <input type="checkbox" id="vibration-toggle" checked>
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <button class="modal-btn close-btn" onclick="closeSettings()">✖️ Fechar</button>
+        </div>
+    </div>
 
-    <footer>
-        <p>Feito com ❤️</p>
-    </footer>
-</div>
+    <script src="script.js"></script>
+</body>
+</html>
