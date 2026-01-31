@@ -7,7 +7,7 @@ source.include_exts = py,png,jpg
 version = 1.0.0
 requirements = python3,kivy==2.2.1,pyjnius,android,certifi
 
-# ICONE - importante!
+# ICONE
 icon.filename = icon.png
 presplash.filename = icon.png
 
@@ -20,8 +20,8 @@ android.archs = arm64-v8a
 android.accept_sdk_license = True
 android.presplash_color = #1a1a2e
 
-# Tela
-orientation = landacape
+# ORIENTAÇÃO LANDSCAPE (horizontal)
+orientation = landscape
 fullscreen = 1
 
 [buildozer]
