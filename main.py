@@ -254,82 +254,50 @@ class WebViewApp(App):
             pointer-events: none;
         }
         
-        .stars {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none;
-            overflow: hidden;
-        }
-        
-        .star {
-            position: absolute;
-            width: 3px;
-            height: 3px;
-            background: white;
-            border-radius: 50%;
-            animation: twinkle 2s infinite;
-        }
-        
-        @keyframes twinkle {
-            0%, 100% { opacity: 0.3; }
-            50% { opacity: 1; }
-        }
-    </style>
-</head>
-<body>
-    <div class="stars">
-        <div class="star" style="top:10%;left:20%;animation-delay:0s"></div>
-        <div class="star" style="top:20%;left:80%;animation-delay:0.5s"></div>
-        <div class="star" style="top:60%;left:10%;animation-delay:1s"></div>
-        <div class="star" style="top:30%;left:60%;animation-delay:1.5s"></div>
-        <div class="star" style="top:80%;left:30%;animation-delay:0.3s"></div>
-        <div class="star" style="top:50%;left:90%;animation-delay:0.8s"></div>
-        <div class="star" style="top:70%;left:70%;animation-delay:1.2s"></div>
-    </div>
+from kivy.app import App
+from kivy.uix.boxlayout import BoxLayout
+from kivy.utils import platform
+
+if platform == 'android':
+    from jnius import autoclass
+    from android.runnable import run_on_ui_thread
     
-    <div class="wave"></div>
+    PythonActivity = autoclass('org.kivy.android.PythonActivity')
+    WebView = autoclass('android.webkit.WebView')
+    WebViewClient = autoclass('android.webkit.WebViewClient')
+    WebSettings = autoclass('android.webkit.WebSettings')
+    LayoutParams = autoclass('android.view.ViewGroup$LayoutParams')
+    Color = autoclass('android.graphics.Color')
+
+
+class WebViewApp(App):
     
-    <div class="container">
-        <div class="icon-container">
-            <span class="icon">🌐</span>
-        </div>
-        
-        <h1>Conexão Necessária</h1>
-        
-        <p class="subtitle">
-            Para carregar o World Tower Defense,<br>
-            conecte-se à internet e tente novamente.
-        </p>
-        
-        <button class="btn" onclick="location.reload()">
-            🔄 Tentar Novamente
-        </button>
-        
-        <div class="tips">
-            <h3>💡 Dicas</h3>
-            <ul>
-                <li>Verifique sua conexão Wi-Fi</li>
-                <li>Ative os dados móveis</li>
-                <li>Reinicie o aplicativo</li>
-            </ul>
-        </div>
-    </div>
+    if platform == 'android':
+        @run_on_ui_thread
+        def load_webview(self):
+            activity = PythonActivity.mActivity
+            webview = WebView(activity)
+            
+            settings = webview.getSettings()
+            settings.setJavaScriptEnabled(True)
+            settings.setDomStorageEnabled(True)
+            settings.setUseWideViewPort(True)
+            settings.setLoadWithOverviewMode(True)
+            settings.setCacheMode(WebSettings.LOAD_DEFAULT)
+            
+            webview.setWebViewClient(WebViewClient())
+            webview.setBackgroundColor(Color.parseColor("#0a0a1a"))
+            
+            # Carrega direto do GitHub Pages
+            webview.loadUrl("https://valentin3245.github.io/World-Tower-Defense/")
+            
+            params = LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT)
+            activity.addContentView(webview, params)
     
-    <script>
-        // Verificar conexão a cada 5 segundos
-        setInterval(function() {
-            fetch('https://www.google.com', {mode: 'no-cors', timeout: 3000})
-                .then(function() {
-                    location.reload();
-                })
-                .catch(function() {});
-        }, 5000);
-    </script>
-</body>
-</html>"""
+    def build(self):
+        if platform == 'android':
+            self.load_webview()
+        return BoxLayout()
     
     def on_pause(self):
         return True
