@@ -4,662 +4,667 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>World Tower Defense 3D</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            -webkit-tap-highlight-color: transparent;
-            user-select: none;
-        }
-        body {
-            font-family: Arial, sans-serif;
-            background: #0a0a1a;
-            color: #fff;
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #000; 
             overflow: hidden;
-            width: 100vw;
-            height: 100vh;
-        }
-        .screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: none;
-            flex-direction: column;
-        }
-        .screen.active {
-            display: flex;
+            touch-action: none;
         }
         
         /* MENU */
         #menu {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
             background: linear-gradient(135deg, #1a0a2e, #0f3460);
-            justify-content: center;
-            align-items: center;
-        }
-        .menu-box {
-            text-align: center;
-            padding: 20px;
-        }
-        .logo {
-            font-size: 60px;
-            margin-bottom: 10px;
-        }
-        .title {
-            font-size: 24px;
-            margin-bottom: 5px;
-        }
-        .subtitle {
-            font-size: 12px;
-            opacity: 0.6;
-            margin-bottom: 30px;
-        }
-        .stats {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-bottom: 30px;
-        }
-        .stat {
-            background: rgba(255,255,255,0.1);
-            padding: 8px 15px;
-            border-radius: 20px;
-            font-size: 13px;
-        }
-        .menu-btns {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            max-width: 280px;
-            margin: 0 auto;
-        }
-        .btn {
-            padding: 16px 30px;
-            font-size: 16px;
-            font-weight: bold;
-            color: #fff;
-            background: rgba(255,255,255,0.1);
-            border: 2px solid rgba(255,255,255,0.2);
-            border-radius: 15px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        .btn:active {
-            transform: scale(0.95);
-            opacity: 0.8;
-        }
-        .btn-play {
-            background: linear-gradient(135deg, #e94560, #c73e54);
-            border-color: #e94560;
-        }
-        
-        /* LOBBY */
-        #lobby {
-            background: linear-gradient(135deg, #0f3460, #1a0a2e);
-        }
-        .header {
-            display: flex;
-            align-items: center;
-            padding: 15px;
-            background: rgba(0,0,0,0.5);
-            gap: 15px;
-        }
-        .back-btn {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: #fff;
-            padding: 10px 15px;
-            border-radius: 10px;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .header h2 {
-            flex: 1;
-            font-size: 18px;
-        }
-        .code-box {
-            background: rgba(255,255,255,0.1);
-            padding: 8px 15px;
-            border-radius: 10px;
-            font-size: 14px;
-        }
-        .lobby-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
-        .section-title {
-            font-size: 14px;
-            color: #e94560;
-            margin-bottom: 10px;
-        }
-        .players {
-            margin-bottom: 20px;
-        }
-        .player {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            background: rgba(255,255,255,0.05);
-            padding: 12px 15px;
-            border-radius: 12px;
-            margin-bottom: 8px;
-        }
-        .player.host {
-            border: 2px solid #f39c12;
-        }
-        .player.empty {
-            opacity: 0.4;
-            justify-content: center;
-        }
-        .player-avatar {
-            width: 40px;
-            height: 40px;
-            background: rgba(255,255,255,0.1);
-            border-radius: 50%;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 20px;
-        }
-        .player-info {
-            flex: 1;
-        }
-        .player-name {
-            font-weight: bold;
-            font-size: 14px;
-        }
-        .player-status {
-            font-size: 11px;
-            opacity: 0.6;
-        }
-        .ready-badge {
-            background: #4ecca3;
-            color: #000;
-            padding: 5px 10px;
-            border-radius: 15px;
-            font-size: 11px;
-            font-weight: bold;
-        }
-        .settings-box {
-            background: rgba(255,255,255,0.05);
-            padding: 15px;
-            border-radius: 12px;
-            margin-bottom: 20px;
-        }
-        .setting-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        .setting-row:last-child {
-            border-bottom: none;
-        }
-        .setting-row select {
-            background: rgba(255,255,255,0.1);
-            border: none;
-            color: #fff;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 13px;
-        }
-        .lobby-actions {
-            display: flex;
-            gap: 10px;
-            padding: 15px;
-            background: rgba(0,0,0,0.5);
-        }
-        .lobby-actions .btn {
-            flex: 1;
-        }
-        
-        /* GAME */
-        #game {
-            background: #1a3a19;
-        }
-        #game-canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-        }
-        .hud-top {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px 15px;
-            background: linear-gradient(180deg, rgba(0,0,0,0.8), transparent);
             z-index: 100;
         }
-        .hud-group {
+        #menu.hidden { display: none; }
+        
+        .menu-box {
+            text-align: center;
+            color: white;
+        }
+        .menu-box h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .menu-box p {
+            opacity: 0.6;
+            margin-bottom: 30px;
+        }
+        .menu-box .icon {
+            font-size: 80px;
+            display: block;
+            margin-bottom: 20px;
+            animation: bounce 2s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+        .btn {
+            display: block;
+            width: 250px;
+            margin: 10px auto;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #e94560, #c73e54);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+        }
+        .btn:active { transform: scale(0.95); }
+        
+        /* GAME */
+        #game-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            display: none;
+        }
+        #game-container.active { display: block; }
+        
+        #game-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        /* HUD */
+        .hud {
+            position: fixed;
+            top: 0; left: 0; right: 0;
+            padding: 15px;
             display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 15px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.8), transparent);
+            color: white;
+            z-index: 50;
         }
         .hud-stat {
-            display: flex;
-            align-items: center;
-            gap: 5px;
             background: rgba(0,0,0,0.5);
-            padding: 8px 12px;
+            padding: 10px 15px;
             border-radius: 10px;
-            font-size: 14px;
+            font-size: 16px;
+            margin: 0 5px;
         }
         .hud-center {
             text-align: center;
         }
-        .wave-num {
-            font-size: 28px;
+        .hud-center .wave {
+            font-size: 32px;
             font-weight: bold;
             color: #f39c12;
         }
-        .wave-label {
-            font-size: 10px;
+        .hud-center .label {
+            font-size: 12px;
             opacity: 0.6;
         }
-        .hud-btn {
-            width: 40px;
-            height: 40px;
-            background: rgba(0,0,0,0.5);
-            border: none;
-            border-radius: 10px;
-            font-size: 18px;
-            cursor: pointer;
-        }
-        .tower-panel {
-            position: absolute;
-            bottom: 80px;
+        
+        /* TOWERS PANEL */
+        .towers-panel {
+            position: fixed;
+            bottom: 100px;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
             gap: 10px;
-            background: rgba(0,0,0,0.8);
-            padding: 12px;
+            background: rgba(0,0,0,0.9);
+            padding: 15px;
             border-radius: 20px;
-            z-index: 100;
+            z-index: 50;
         }
         .tower-btn {
-            width: 65px;
-            height: 70px;
+            width: 70px;
+            height: 80px;
             background: rgba(255,255,255,0.1);
             border: 3px solid transparent;
-            border-radius: 12px;
+            border-radius: 15px;
+            color: white;
+            text-align: center;
+            cursor: pointer;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
-            cursor: pointer;
-            transition: all 0.2s;
         }
         .tower-btn.selected {
             border-color: #e94560;
             background: rgba(233,69,96,0.3);
         }
-        .tower-btn:active {
-            transform: scale(0.9);
-        }
-        .tower-btn .icon {
-            font-size: 28px;
+        .tower-btn .emoji {
+            font-size: 32px;
         }
         .tower-btn .cost {
-            font-size: 11px;
-            margin-top: 3px;
+            font-size: 12px;
+            margin-top: 5px;
         }
-        .wave-button {
-            position: absolute;
-            bottom: 20px;
+        
+        /* WAVE BUTTON */
+        .wave-btn {
+            position: fixed;
+            bottom: 30px;
             left: 50%;
             transform: translateX(-50%);
-            padding: 15px 40px;
-            background: linear-gradient(135deg, #4ecca3, #3da87d);
+            padding: 18px 50px;
+            font-size: 18px;
+            font-weight: bold;
+            color: white;
+            background: linear-gradient(135deg, #4ecca3, #2ecc71);
             border: none;
             border-radius: 30px;
-            color: #fff;
-            font-size: 16px;
-            font-weight: bold;
             cursor: pointer;
-            z-index: 100;
-            box-shadow: 0 5px 20px rgba(78,204,163,0.4);
+            z-index: 50;
         }
-        .wave-button:disabled {
-            background: #444;
-            box-shadow: none;
+        .wave-btn:disabled {
+            background: #555;
         }
-        .wave-button:active {
-            transform: translateX(-50%) scale(0.95);
+        
+        /* PAUSE BUTTON */
+        .pause-btn {
+            width: 50px;
+            height: 50px;
+            background: rgba(0,0,0,0.5);
+            border: none;
+            border-radius: 15px;
+            font-size: 24px;
+            cursor: pointer;
         }
         
         /* MODALS */
         .modal {
             position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.85);
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9);
             display: none;
             justify-content: center;
             align-items: center;
-            z-index: 1000;
+            z-index: 200;
         }
-        .modal.active {
-            display: flex;
-        }
+        .modal.active { display: flex; }
         .modal-box {
             background: linear-gradient(135deg, #1a1a3e, #0f0f2d);
-            padding: 30px;
-            border-radius: 20px;
+            padding: 40px;
+            border-radius: 25px;
             text-align: center;
-            min-width: 280px;
-            max-width: 90%;
+            color: white;
+            min-width: 300px;
         }
         .modal-box h2 {
-            font-size: 24px;
+            font-size: 28px;
             margin-bottom: 20px;
         }
-        .modal-box .btn {
+        .modal-box .icon {
+            font-size: 70px;
             display: block;
-            width: 100%;
-            margin: 10px 0;
-        }
-        .modal-icon {
-            font-size: 60px;
             margin-bottom: 15px;
         }
-        .result-stats {
-            display: flex;
-            justify-content: center;
-            gap: 20px;
-            margin: 20px 0;
-        }
-        .result-stat {
-            text-align: center;
-        }
-        .result-stat .value {
-            font-size: 24px;
+        .modal-btn {
+            display: block;
+            width: 100%;
+            padding: 15px;
+            margin: 10px 0;
+            font-size: 16px;
             font-weight: bold;
-            color: #f39c12;
+            color: white;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            cursor: pointer;
         }
-        .result-stat .label {
-            font-size: 11px;
-            opacity: 0.6;
+        .modal-btn:active { transform: scale(0.95); }
+        .modal-btn.primary {
+            background: linear-gradient(135deg, #e94560, #c73e54);
+            border-color: #e94560;
         }
         
-        /* Animations */
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        /* MESSAGE */
+        .message {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            z-index: 100;
+            display: none;
         }
-        .logo {
-            animation: float 3s ease-in-out infinite;
-        }
+        .message.active { display: block; }
     </style>
 </head>
 <body>
 
-    <!-- MENU PRINCIPAL -->
-    <div id="menu" class="screen active">
+    <!-- MENU -->
+    <div id="menu">
         <div class="menu-box">
-            <div class="logo">🏰</div>
-            <div class="title">World Tower Defense</div>
-            <div class="subtitle">3D Multiplayer Edition</div>
-            
-            <div class="stats">
-                <div class="stat">💎 1000</div>
-                <div class="stat">🪙 5000</div>
-                <div class="stat">⭐ Nv.1</div>
-            </div>
-            
-            <div class="menu-btns">
-                <button class="btn btn-play" id="btn-play">▶️ JOGAR</button>
-                <button class="btn" id="btn-create">🔐 CRIAR SALA</button>
-                <button class="btn" id="btn-join">🌐 ENTRAR EM SALA</button>
-            </div>
+            <span class="icon">🏰</span>
+            <h1>World Tower Defense</h1>
+            <p>3D Edition</p>
+            <button class="btn" onclick="startGame()">▶️ JOGAR</button>
         </div>
     </div>
-
-    <!-- LOBBY -->
-    <div id="lobby" class="screen">
-        <div class="header">
-            <button class="back-btn" id="lobby-back">← Voltar</button>
-            <h2>Lobby</h2>
-            <div class="code-box">Código: <span id="room-code">ABCD12</span></div>
-        </div>
-        
-        <div class="lobby-content">
-            <div class="players">
-                <div class="section-title">👥 Jogadores (1/4)</div>
-                <div class="player host">
-                    <div class="player-avatar">👤</div>
-                    <div class="player-info">
-                        <div class="player-name">Você (Host)</div>
-                        <div class="player-status">Nível 15</div>
-                    </div>
-                    <div class="ready-badge">PRONTO</div>
-                </div>
-                <div class="player empty">
-                    <div class="player-avatar">➕</div>
-                    <span>Aguardando jogador...</span>
-                </div>
-                <div class="player empty">
-                    <div class="player-avatar">➕</div>
-                    <span>Aguardando jogador...</span>
-                </div>
-                <div class="player empty">
-                    <div class="player-avatar">➕</div>
-                    <span>Aguardando jogador...</span>
-                </div>
-            </div>
-            
-            <div class="settings-box">
-                <div class="section-title">⚙️ Configurações (Host)</div>
-                <div class="setting-row">
-                    <span>🗺️ Mapa</span>
-                    <select id="map-select">
-                        <option value="forest">🌲 Floresta</option>
-                    </select>
-                </div>
-                <div class="setting-row">
-                    <span>😈 Dificuldade</span>
-                    <select id="diff-select">
-                        <option value="easy">😊 Fácil</option>
-                        <option value="normal" selected>😐 Normal</option>
-                        <option value="hard">😈 Difícil</option>
-                    </select>
-                </div>
-                <div class="setting-row">
-                    <span>🌊 Waves</span>
-                    <select id="waves-select">
-                        <option value="10">10 Waves</option>
-                        <option value="20" selected>20 Waves</option>
-                        <option value="50">50 Waves</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-        
-        <div class="lobby-actions">
-            <button class="btn" id="btn-ready">✅ Pronto</button>
-            <button class="btn btn-play" id="btn-start">🎮 Iniciar Jogo</button>
-        </div>
-    </div>
-
-    <!-- JOGO -->
-    <div id="game" class="screen">
+    
+    <!-- GAME -->
+    <div id="game-container">
         <canvas id="game-canvas"></canvas>
         
-        <div class="hud-top">
-            <div class="hud-group">
-                <div class="hud-stat">❤️ <span id="hud-life">100</span></div>
-                <div class="hud-stat">💰 <span id="hud-gold">500</span></div>
+        <!-- HUD -->
+        <div class="hud">
+            <div>
+                <span class="hud-stat">❤️ <span id="life">100</span></span>
+                <span class="hud-stat">💰 <span id="gold">500</span></span>
             </div>
             <div class="hud-center">
-                <div class="wave-num" id="hud-wave">1</div>
-                <div class="wave-label">WAVE</div>
+                <div class="wave" id="wave-num">1</div>
+                <div class="label">WAVE</div>
             </div>
-            <div class="hud-group">
-                <div class="hud-stat">👹 <span id="hud-enemies">0</span></div>
-                <button class="hud-btn" id="btn-pause">⏸️</button>
+            <div>
+                <span class="hud-stat">👹 <span id="enemies-count">0</span></span>
+                <button class="pause-btn" onclick="pauseGame()">⏸️</button>
             </div>
         </div>
         
-        <div class="tower-panel">
-            <div class="tower-btn" data-tower="archer">
-                <span class="icon">🏹</span>
+        <!-- TORRES -->
+        <div class="towers-panel">
+            <div class="tower-btn" onclick="selectTower('archer', this)">
+                <span class="emoji">🏹</span>
                 <span class="cost">💰100</span>
             </div>
-            <div class="tower-btn" data-tower="mage">
-                <span class="icon">🧙</span>
+            <div class="tower-btn" onclick="selectTower('mage', this)">
+                <span class="emoji">🧙</span>
                 <span class="cost">💰150</span>
             </div>
-            <div class="tower-btn" data-tower="cannon">
-                <span class="icon">💣</span>
+            <div class="tower-btn" onclick="selectTower('cannon', this)">
+                <span class="emoji">💣</span>
                 <span class="cost">💰200</span>
             </div>
-            <div class="tower-btn" data-tower="ice">
-                <span class="icon">❄️</span>
+            <div class="tower-btn" onclick="selectTower('ice', this)">
+                <span class="emoji">❄️</span>
                 <span class="cost">💰175</span>
             </div>
         </div>
         
-        <button class="wave-button" id="btn-wave">⚔️ INICIAR WAVE</button>
+        <!-- WAVE BUTTON -->
+        <button class="wave-btn" id="wave-btn" onclick="startWave()">⚔️ INICIAR WAVE</button>
     </div>
-
-    <!-- PAUSE MODAL -->
-    <div id="modal-pause" class="modal">
-        <div class="modal-box">
-            <h2>⏸️ Pausado</h2>
-            <button class="btn" id="btn-resume">▶️ Continuar</button>
-            <button class="btn" id="btn-restart">🔄 Reiniciar</button>
-            <button class="btn" id="btn-quit">🚪 Sair</button>
-        </div>
-    </div>
-
-    <!-- VICTORY MODAL -->
-    <div id="modal-victory" class="modal">
-        <div class="modal-box">
-            <div class="modal-icon">🏆</div>
-            <h2>VITÓRIA!</h2>
-            <div class="result-stats">
-                <div class="result-stat">
-                    <div class="value" id="v-waves">20</div>
-                    <div class="label">Waves</div>
-                </div>
-                <div class="result-stat">
-                    <div class="value" id="v-towers">8</div>
-                    <div class="label">Torres</div>
-                </div>
-                <div class="result-stat">
-                    <div class="value" id="v-kills">150</div>
-                    <div class="label">Kills</div>
-                </div>
-            </div>
-            <button class="btn btn-play" id="btn-victory-menu">🏠 Menu</button>
-        </div>
-    </div>
-
-    <!-- DEFEAT MODAL -->
-    <div id="modal-defeat" class="modal">
-        <div class="modal-box">
-            <div class="modal-icon">💀</div>
-            <h2>DERROTA</h2>
-            <p style="margin-bottom:15px;opacity:0.7">Wave alcançada: <span id="d-wave">15</span></p>
-            <button class="btn" id="btn-retry">🔄 Tentar Novamente</button>
-            <button class="btn" id="btn-defeat-menu">🏠 Menu</button>
-        </div>
-    </div>
-
-    <!-- THREE.JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     
-    <script>
-    // ==================================================
-    // VARIÁVEIS GLOBAIS
-    // ==================================================
-    let scene, camera, renderer;
-    let towers = [];
-    let enemies = [];
-    let bullets = [];
-    let selectedTowerType = null;
-    let kills = 0;
+    <!-- MESSAGE -->
+    <div class="message" id="message"></div>
+    
+    <!-- PAUSE MODAL -->
+    <div class="modal" id="pause-modal">
+        <div class="modal-box">
+            <h2>⏸️ PAUSADO</h2>
+            <button class="modal-btn" onclick="resumeGame()">▶️ Continuar</button>
+            <button class="modal-btn" onclick="restartGame()">🔄 Reiniciar</button>
+            <button class="modal-btn" onclick="quitGame()">🚪 Sair</button>
+        </div>
+    </div>
+    
+    <!-- VICTORY MODAL -->
+    <div class="modal" id="victory-modal">
+        <div class="modal-box">
+            <span class="icon">🏆</span>
+            <h2>VITÓRIA!</h2>
+            <p>Parabéns! Você venceu!</p>
+            <button class="modal-btn primary" onclick="quitGame()">🏠 Menu</button>
+        </div>
+    </div>
+    
+    <!-- DEFEAT MODAL -->
+    <div class="modal" id="defeat-modal">
+        <div class="modal-box">
+            <span class="icon">💀</span>
+            <h2>DERROTA</h2>
+            <p>Os inimigos destruíram sua base!</p>
+            <button class="modal-btn" onclick="restartGame()">🔄 Tentar Novamente</button>
+            <button class="modal-btn" onclick="quitGame()">🏠 Menu</button>
+        </div>
+    </div>
 
-    const game = {
+<script>
+// ==========================================
+// VARIÁVEIS GLOBAIS
+// ==========================================
+let scene, camera, renderer;
+let towers = [];
+let enemies = [];
+let bullets = [];
+let selectedTowerType = null;
+let selectedBtn = null;
+let animationId = null;
+
+let gameState = {
+    gold: 500,
+    life: 100,
+    wave: 1,
+    maxWaves: 20,
+    playing: false,
+    paused: false
+};
+
+// Dados das torres
+const TOWER_DATA = {
+    archer: { cost: 100, damage: 25, range: 6, speed: 800, color: 0x8B4513 },
+    mage: { cost: 150, damage: 45, range: 5, speed: 1200, color: 0x9400D3 },
+    cannon: { cost: 200, damage: 100, range: 4, speed: 2000, color: 0x2F4F4F },
+    ice: { cost: 175, damage: 30, range: 5, speed: 1000, color: 0x00CED1 }
+};
+
+// Caminho dos inimigos
+const PATH = [
+    { x: -15, z: 0 },
+    { x: -8, z: 0 },
+    { x: -8, z: 8 },
+    { x: 0, z: 8 },
+    { x: 0, z: -8 },
+    { x: 8, z: -8 },
+    { x: 8, z: 0 },
+    { x: 15, z: 0 }
+];
+
+// ==========================================
+// INICIAR JOGO
+// ==========================================
+function startGame() {
+    document.getElementById('menu').classList.add('hidden');
+    document.getElementById('game-container').classList.add('active');
+    
+    // Reset
+    gameState = {
         gold: 500,
         life: 100,
         wave: 1,
         maxWaves: 20,
-        playing: false,
-        paused: false,
-        difficulty: 'normal'
+        playing: true,
+        paused: false
     };
+    
+    towers = [];
+    enemies = [];
+    bullets = [];
+    selectedTowerType = null;
+    
+    updateHUD();
+    init3D();
+}
 
-    const TOWERS = {
-        archer: { cost: 100, damage: 25, range: 5, speed: 1000, color: 0x8B4513 },
-        mage: { cost: 150, damage: 40, range: 4, speed: 1500, color: 0x9932CC },
-        cannon: { cost: 200, damage: 80, range: 3, speed: 2500, color: 0x2F4F4F },
-        ice: { cost: 175, damage: 20, range: 4, speed: 1200, color: 0x00BFFF }
-    };
+// ==========================================
+// INICIALIZAR THREE.JS
+// ==========================================
+function init3D() {
+    const canvas = document.getElementById('game-canvas');
+    
+    // CENA
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x87CEEB); // Céu azul
+    
+    // Fog para profundidade
+    scene.fog = new THREE.Fog(0x87CEEB, 30, 80);
+    
+    // CÂMERA
+    camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.set(0, 25, 30);
+    camera.lookAt(0, 0, 0);
+    
+    // RENDERER
+    renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    
+    // LUZES
+    // Luz ambiente
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    
+    // Sol
+    const sunLight = new THREE.DirectionalLight(0xffffff, 1);
+    sunLight.position.set(20, 40, 20);
+    sunLight.castShadow = true;
+    sunLight.shadow.mapSize.width = 2048;
+    sunLight.shadow.mapSize.height = 2048;
+    sunLight.shadow.camera.near = 0.5;
+    sunLight.shadow.camera.far = 100;
+    sunLight.shadow.camera.left = -30;
+    sunLight.shadow.camera.right = 30;
+    sunLight.shadow.camera.top = 30;
+    sunLight.shadow.camera.bottom = -30;
+    scene.add(sunLight);
+    
+    // CHÃO (grama)
+    const groundGeo = new THREE.PlaneGeometry(60, 40);
+    const groundMat = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground.rotation.x = -Math.PI / 2;
+    ground.position.y = -0.1;
+    ground.receiveShadow = true;
+    ground.name = 'ground';
+    scene.add(ground);
+    
+    // CAMINHO
+    createPath();
+    
+    // BASE DO JOGADOR (Castelo)
+    createCastle(15, 0);
+    
+    // PORTAL DOS INIMIGOS
+    createPortal(-15, 0);
+    
+    // ÁRVORES DECORATIVAS
+    createTrees();
+    
+    // MONTANHAS AO FUNDO
+    createMountains();
+    
+    // EVENT: Click para colocar torre
+    canvas.addEventListener('click', onCanvasClick);
+    canvas.addEventListener('touchstart', onCanvasTouch);
+    
+    // Resize
+    window.addEventListener('resize', onResize);
+    
+    // Iniciar loop
+    animate();
+}
 
-    const PATH = [
-        { x: -12, z: 0 },
-        { x: -6, z: 0 },
-        { x: -6, z: 6 },
-        { x: 0, z: 6 },
-        { x: 0, z: -6 },
-        { x: 6, z: -6 },
-        { x: 6, z: 0 },
-        { x: 12, z: 0 }
+// ==========================================
+// CRIAR CAMINHO
+// ==========================================
+function createPath() {
+    const pathMaterial = new THREE.MeshLambertMaterial({ color: 0xD2691E });
+    
+    for (let i = 0; i < PATH.length - 1; i++) {
+        const p1 = PATH[i];
+        const p2 = PATH[i + 1];
+        
+        const dx = p2.x - p1.x;
+        const dz = p2.z - p1.z;
+        const length = Math.sqrt(dx * dx + dz * dz);
+        
+        const pathGeo = new THREE.BoxGeometry(length + 2, 0.3, 3);
+        const pathMesh = new THREE.Mesh(pathGeo, pathMaterial);
+        
+        pathMesh.position.x = (p1.x + p2.x) / 2;
+        pathMesh.position.z = (p1.z + p2.z) / 2;
+        pathMesh.position.y = 0.15;
+        pathMesh.rotation.y = Math.atan2(dz, dx);
+        pathMesh.receiveShadow = true;
+        
+        scene.add(pathMesh);
+    }
+}
+
+// ==========================================
+// CRIAR CASTELO
+// ==========================================
+function createCastle(x, z) {
+    const castle = new THREE.Group();
+    
+    // Base
+    const baseMat = new THREE.MeshLambertMaterial({ color: 0x808080 });
+    const base = new THREE.Mesh(new THREE.BoxGeometry(5, 2, 5), baseMat);
+    base.position.y = 1;
+    base.castShadow = true;
+    base.receiveShadow = true;
+    castle.add(base);
+    
+    // Torres do castelo
+    const towerMat = new THREE.MeshLambertMaterial({ color: 0x696969 });
+    const positions = [[-2, -2], [2, -2], [-2, 2], [2, 2]];
+    
+    positions.forEach(pos => {
+        const tower = new THREE.Mesh(new THREE.CylinderGeometry(0.8, 1, 4, 8), towerMat);
+        tower.position.set(pos[0], 2, pos[1]);
+        tower.castShadow = true;
+        castle.add(tower);
+        
+        // Topo da torre
+        const top = new THREE.Mesh(new THREE.ConeGeometry(1, 1.5, 8), new THREE.MeshLambertMaterial({ color: 0x8B0000 }));
+        top.position.set(pos[0], 4.5, pos[1]);
+        top.castShadow = true;
+        castle.add(top);
+    });
+    
+    // Bandeira
+    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.1, 0.1, 3), new THREE.MeshLambertMaterial({ color: 0x8B4513 }));
+    pole.position.y = 4.5;
+    castle.add(pole);
+    
+    const flag = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1), new THREE.MeshLambertMaterial({ color: 0x0000FF, side: THREE.DoubleSide }));
+    flag.position.set(0.8, 5.5, 0);
+    castle.add(flag);
+    
+    castle.position.set(x, 0, z);
+    scene.add(castle);
+}
+
+// ==========================================
+// CRIAR PORTAL
+// ==========================================
+function createPortal(x, z) {
+    const portal = new THREE.Group();
+    
+    // Base
+    const baseMat = new THREE.MeshLambertMaterial({ color: 0x2F2F2F });
+    const base = new THREE.Mesh(new THREE.BoxGeometry(4, 1, 4), baseMat);
+    base.position.y = 0.5;
+    base.castShadow = true;
+    portal.add(base);
+    
+    // Pilares
+    const pillarMat = new THREE.MeshLambertMaterial({ color: 0x4A4A4A });
+    const pillar1 = new THREE.Mesh(new THREE.BoxGeometry(1, 5, 1), pillarMat);
+    pillar1.position.set(-1.5, 2.5, 0);
+    pillar1.castShadow = true;
+    portal.add(pillar1);
+    
+    const pillar2 = new THREE.Mesh(new THREE.BoxGeometry(1, 5, 1), pillarMat);
+    pillar2.position.set(1.5, 2.5, 0);
+    pillar2.castShadow = true;
+    portal.add(pillar2);
+    
+    // Arco
+    const arch = new THREE.Mesh(new THREE.BoxGeometry(4, 1, 1), pillarMat);
+    arch.position.y = 5;
+    arch.castShadow = true;
+    portal.add(arch);
+    
+    // Energia do portal (brilhante)
+    const energyMat = new THREE.MeshBasicMaterial({ color: 0xFF0000, transparent: true, opacity: 0.7 });
+    const energy = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 4), energyMat);
+    energy.position.y = 3;
+    energy.rotation.y = Math.PI / 2;
+    portal.add(energy);
+    
+    portal.position.set(x, 0, z);
+    scene.add(portal);
+}
+
+// ==========================================
+// CRIAR ÁRVORES
+// ==========================================
+function createTrees() {
+    const treePositions = [
+        { x: -10, z: -15 },
+        { x: -5, z: -12 },
+        { x: 5, z: -15 },
+        { x: 12, z: -12 },
+        { x: -12, z: 12 },
+        { x: -5, z: 15 },
+        { x: 8, z: 12 },
+        { x: 15, z: 10 }
     ];
-
-    // ==================================================
-    // UTILITÁRIOS
-    // ==================================================
-    function $(id) { return document.getElementById(id); }
     
-    function showScreen(id) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-        $(id).classList.add('active');
-    }
-    
-    function showModal(id) {
-        $(id).classList.add('active');
-    }
-    
-    function hideModal(id) {
-        $(id).classList.remove('active');
-    }
-    
-    function hideAllModals() {
-        document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
-    }
-
-    function generateCode() {
-        const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-        let code = '';
-        for (let i = 0; i < 6; i++) {
-            code += chars[Math.floor(Math.random() * chars.length)];
-        }
-        return code;
-    }
-
-    // ==================================================
-    // EVENT LISTENERS - MENU
-    // ==================================================
-    $('btn-play').addEventListener('click', function() {
-        $('room-code').textContent = generateCode();
-        showScreen('lobby');
+    treePositions.forEach(pos => {
+        const tree = new THREE.Group();
+        
+        // Tronco
+        const trunk = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.3, 0.5, 2, 8),
+            new THREE.MeshLambertMaterial({ color: 0x8B4513 })
+        );
+        trunk.position.y = 1;
+        trunk.castShadow = true;
+        tree.add(trunk);
+        
+        // Copa
+        const leaves = new THREE.Mesh(
+            new THREE.ConeGeometry(1.5, 3, 8),
+            new THREE.MeshLambertMaterial({ color: 0x228B22 })
+        );
+        leaves.position.y = 3.5;
+        leaves.castShadow = true;
+        tree.add(leaves);
+        
+        tree.position.set(pos.x, 0, pos.z);
+        scene.add(tree);
     });
+}
 
-    $('btn-create').addEventListener('click', function() {
-        $('room-code').textContent = generateCode();
-        showScreen('lobby');
-    });
+// ==========================================
+// CRIAR MONTANHAS
+// ==========================================
+function createMountains() {
+    const mountainMat = new THREE.MeshLambertMaterial({ color: 0x6B8E23 });
+    
+    // Montanha 1
+    const m1 = new THREE.Mesh(new THREE.ConeGeometry(15, 20, 6), mountainMat);
+    m1.position.set(-25, 10, -25);
+    scene.add(m1);
+    
+    // Montanha 2
+    const m2 = new THREE.Mesh(new THREE.ConeGeometry(12, 18, 6), mountainMat);
+    m2.position.set(30, 9, -20);
+    scene.add(m2);
+    
+    // Montanha 3
+    const m3 = new THREE.Mesh(new THREE.ConeGeometry(18, 25, 6), mountainMat);
+    m3.position.set(0, 12.5, -35);
+    scene.add(m3);
+}
+
+// ==========================================
+// CRIAR TORRE 3D
+// ==========================================
+function createTower3D(x, z, type) {
+    const data = TOWER_DATA[type];
+    const tower = new THREE.Group();
+    
+    // Base circular
+    const baseGeo = new THREE.CylinderGeometry(1.2, 1.5, 0.6, 12);
+    const baseMat = new THREE.MeshLambertMaterial({ color: 0x555555 });
+    cons
