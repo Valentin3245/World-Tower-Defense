@@ -3,195 +3,491 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>World Tower Defense</title>
+    <title>World Tower Defense 3D</title>
     <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 <body>
     
-    <!-- TELA DE LOADING -->
+    <!-- LOADING SCREEN -->
     <div id="loading-screen" class="screen active">
         <div class="loading-content">
-            <div class="logo-container">
-                <div class="logo-icon">🏰</div>
-                <h1 class="logo-text">World Tower Defense</h1>
+            <div class="loading-logo">
+                <div class="logo-3d">🏰</div>
+                <h1>World Tower Defense</h1>
+                <p class="subtitle">3D Edition</p>
             </div>
-            
-            <div class="loading-bar-container">
-                <div class="loading-bar">
-                    <div class="loading-progress" id="loading-progress"></div>
-                </div>
-                <p class="loading-text" id="loading-text">Carregando recursos...</p>
+            <div class="loading-bar">
+                <div class="loading-progress" id="loading-progress"></div>
             </div>
-            
-            <div class="loading-tips">
-                <p id="tip-text">💡 Dica: Posicione suas torres estrategicamente!</p>
-            </div>
+            <p class="loading-text" id="loading-text">Carregando...</p>
         </div>
-        
         <div class="particles" id="particles"></div>
     </div>
     
-    <!-- TELA DE MENU / PLAY -->
+    <!-- MENU PRINCIPAL -->
     <div id="menu-screen" class="screen">
-        <div class="menu-background"></div>
-        
-        <div class="menu-content">
-            <div class="menu-logo">
-                <div class="menu-icon">🏰</div>
-                <h1>World Tower Defense</h1>
-                <p class="menu-subtitle">Defenda seu reino!</p>
-            </div>
-            
-            <div class="menu-buttons">
-                <button class="menu-btn play-btn" onclick="startGame()">
-                    <span class="btn-icon">▶️</span>
-                    <span class="btn-text">JOGAR</span>
-                </button>
+        <canvas id="menu-canvas"></canvas>
+        <div class="menu-overlay">
+            <div class="menu-content">
+                <div class="menu-logo">
+                    <h1>🏰 World Tower Defense</h1>
+                    <p>3D Edition</p>
+                </div>
                 
-                <button class="menu-btn" onclick="openShop()">
-                    <span class="btn-icon">🛒</span>
-                    <span class="btn-text">LOJA</span>
-                </button>
+                <div class="player-stats">
+                    <div class="stat-box">
+                        <span class="stat-icon">💎</span>
+                        <span class="stat-value" id="menu-gems">1000</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-icon">🪙</span>
+                        <span class="stat-value" id="menu-coins">5000</span>
+                    </div>
+                    <div class="stat-box">
+                        <span class="stat-icon">⭐</span>
+                        <span class="stat-value">Nível <span id="menu-level">1</span></span>
+                    </div>
+                </div>
                 
-                <button class="menu-btn" onclick="openSettings()">
-                    <span class="btn-icon">⚙️</span>
-                    <span class="btn-text">OPÇÕES</span>
-                </button>
+                <div class="menu-buttons">
+                    <button class="menu-btn play" onclick="showScreen('mode-screen')">
+                        <span class="btn-icon">▶️</span>
+                        <span>JOGAR</span>
+                    </button>
+                    <button class="menu-btn" onclick="showScreen('multiplayer-screen')">
+                        <span class="btn-icon">🌐</span>
+                        <span>MULTIPLAYER</span>
+                    </button>
+                    <button class="menu-btn" onclick="showScreen('towers-screen')">
+                        <span class="btn-icon">🏰</span>
+                        <span>TORRES</span>
+                    </button>
+                    <button class="menu-btn" onclick="showScreen('shop-screen')">
+                        <span class="btn-icon">🛒</span>
+                        <span>LOJA</span>
+                    </button>
+                    <button class="menu-btn" onclick="showScreen('settings-screen')">
+                        <span class="btn-icon">⚙️</span>
+                        <span>OPÇÕES</span>
+                    </button>
+                </div>
             </div>
-            
-            <div class="menu-stats">
-                <div class="stat-item">
-                    <span class="stat-icon">🏆</span>
-                    <span class="stat-value" id="high-score">0</span>
-                    <span class="stat-label">Recorde</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-icon">💎</span>
-                    <span class="stat-value" id="gems">100</span>
-                    <span class="stat-label">Gemas</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-icon">⭐</span>
-                    <span class="stat-value" id="level">1</span>
-                    <span class="stat-label">Nível</span>
-                </div>
-            </div>
-        </div>
-        
-        <div class="floating-castles">
-            <div class="castle castle-1">🏯</div>
-            <div class="castle castle-2">🗼</div>
-            <div class="castle castle-3">⛪</div>
         </div>
     </div>
     
-    <!-- TELA DO JOGO -->
+    <!-- SELEÇÃO DE MODO -->
+    <div id="mode-screen" class="screen">
+        <div class="screen-header">
+            <button class="back-btn" onclick="showScreen('menu-screen')">← Voltar</button>
+            <h2>Selecionar Modo</h2>
+        </div>
+        <div class="cards-container">
+            <div class="mode-card" onclick="showScreen('map-screen')">
+                <div class="card-icon">🗺️</div>
+                <h3>Campanha</h3>
+                <p>50 níveis épicos</p>
+                <div class="card-footer">
+                    <div class="progress-mini">
+                        <div class="progress-fill" style="width: 30%"></div>
+                    </div>
+                    <span>15/50</span>
+                </div>
+            </div>
+            <div class="mode-card" onclick="selectMode('endless')">
+                <div class="card-icon">♾️</div>
+                <h3>Infinito</h3>
+                <p>Sobreviva o máximo</p>
+                <div class="card-footer">
+                    <span>🏆 Recorde: Wave 47</span>
+                </div>
+            </div>
+            <div class="mode-card" onclick="selectMode('challenge')">
+                <div class="card-icon">⚔️</div>
+                <h3>Desafio Diário</h3>
+                <p>Recompensas especiais</p>
+                <div class="card-footer">
+                    <span>🎁 3 disponíveis</span>
+                </div>
+            </div>
+            <div class="mode-card locked">
+                <div class="card-icon">👹</div>
+                <h3>Boss Rush</h3>
+                <p>Apenas bosses</p>
+                <div class="card-footer">
+                    <span>🔒 Nível 10</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SELEÇÃO DE MAPA -->
+    <div id="map-screen" class="screen">
+        <div class="screen-header">
+            <button class="back-btn" onclick="showScreen('mode-screen')">← Voltar</button>
+            <h2>Selecionar Mapa</h2>
+        </div>
+        <div class="maps-grid">
+            <div class="map-card" onclick="selectMap('forest')">
+                <div class="map-preview forest"></div>
+                <div class="map-info">
+                    <h3>🌲 Floresta</h3>
+                    <div class="stars">⭐☆☆</div>
+                    <p>Caminho único</p>
+                </div>
+            </div>
+            <div class="map-card" onclick="selectMap('desert')">
+                <div class="map-preview desert"></div>
+                <div class="map-info">
+                    <h3>🏜️ Deserto</h3>
+                    <div class="stars">⭐⭐☆</div>
+                    <p>Dois caminhos</p>
+                </div>
+            </div>
+            <div class="map-card" onclick="selectMap('volcano')">
+                <div class="map-preview volcano"></div>
+                <div class="map-info">
+                    <h3>🌋 Vulcão</h3>
+                    <div class="stars">⭐⭐⭐</div>
+                    <p>Múltiplos caminhos</p>
+                </div>
+            </div>
+            <div class="map-card locked">
+                <div class="map-preview locked"></div>
+                <div class="map-info">
+                    <h3>❄️ Gelo Eterno</h3>
+                    <p>🔒 Complete Vulcão</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- SELEÇÃO DE DIFICULDADE -->
+    <div id="difficulty-screen" class="screen">
+        <div class="screen-header">
+            <button class="back-btn" onclick="showScreen('map-screen')">← Voltar</button>
+            <h2>Selecionar Dificuldade</h2>
+        </div>
+        <div class="difficulty-grid">
+            <div class="diff-card easy" onclick="startGame('easy')">
+                <div class="diff-icon">😊</div>
+                <h3>Fácil</h3>
+                <ul>
+                    <li>✓ Inimigos lentos</li>
+                    <li>✓ +50% ouro</li>
+                    <li>✓ Mais vida</li>
+                </ul>
+                <div class="diff-reward">🏆 x1</div>
+            </div>
+            <div class="diff-card normal" onclick="startGame('normal')">
+                <div class="diff-icon">😐</div>
+                <h3>Normal</h3>
+                <ul>
+                    <li>• Velocidade normal</li>
+                    <li>• Ouro padrão</li>
+                    <li>• Vida padrão</li>
+                </ul>
+                <div class="diff-reward">🏆 x2</div>
+            </div>
+            <div class="diff-card hard" onclick="startGame('hard')">
+                <div class="diff-icon">😈</div>
+                <h3>Difícil</h3>
+                <ul>
+                    <li>✗ Inimigos rápidos</li>
+                    <li>✗ -25% ouro</li>
+                    <li>✗ Menos vida</li>
+                </ul>
+                <div class="diff-reward">🏆 x3</div>
+            </div>
+            <div class="diff-card nightmare" onclick="startGame('nightmare')">
+                <div class="diff-icon">💀</div>
+                <h3>Pesadelo</h3>
+                <ul>
+                    <li>☠ Sem segunda chance</li>
+                    <li>☠ Inimigos com buff</li>
+                    <li>☠ Apenas pros</li>
+                </ul>
+                <div class="diff-reward">🏆 x5</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- MULTIPLAYER -->
+    <div id="multiplayer-screen" class="screen">
+        <div class="screen-header">
+            <button class="back-btn" onclick="showScreen('menu-screen')">← Voltar</button>
+            <h2>Multiplayer</h2>
+        </div>
+        <div class="cards-container">
+            <div class="mode-card" onclick="showScreen('lobby-screen')">
+                <div class="card-icon">🎮</div>
+                <h3>Jogar Online</h3>
+                <p>Encontrar partida</p>
+                <div class="card-footer">
+                    <span>👥 1,234 online</span>
+                </div>
+            </div>
+            <div class="mode-card" onclick="createLobby()">
+                <div class="card-icon">🔐</div>
+                <h3>Sala Privada</h3>
+                <p>Jogar com amigos</p>
+            </div>
+            <div class="mode-card" onclick="showScreen('coop-screen')">
+                <div class="card-icon">🤝</div>
+                <h3>Co-op</h3>
+                <p>2-4 jogadores</p>
+            </div>
+            <div class="mode-card" onclick="showScreen('pvp-screen')">
+                <div class="card-icon">⚔️</div>
+                <h3>PvP</h3>
+                <p>1v1 competitivo</p>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LOBBY -->
+    <div id="lobby-screen" class="screen">
+        <div class="screen-header">
+            <button class="back-btn" onclick="showScreen('multiplayer-screen')">← Voltar</button>
+            <h2>Lobby</h2>
+            <div class="lobby-code">Código: <span id="lobby-code">ABCD12</span></div>
+        </div>
+        <div class="lobby-content">
+            <div class="lobby-players">
+                <div class="player-slot host">
+                    <div class="player-avatar">👤</div>
+                    <div class="player-info">
+                        <span class="player-name">Você (Host)</span>
+                        <span class="player-level">Nível 15</span>
+                    </div>
+                    <span class="ready-status ready">✅</span>
+                </div>
+                <div class="player-slot empty">
+                    <div class="player-avatar">➕</div>
+                    <span>Aguardando jogador...</span>
+                </div>
+                <div class="player-slot empty">
+                    <div class="player-avatar">➕</div>
+                    <span>Aguardando jogador...</span>
+                </div>
+                <div class="player-slot empty">
+                    <div class="player-avatar">➕</div>
+                    <span>Aguardando jogador...</span>
+                </div>
+            </div>
+            <div class="lobby-settings">
+                <h3>⚙️ Configurações</h3>
+                <div class="setting-row">
+                    <span>Mapa</span>
+                    <select id="lobby-map">
+                        <option>🌲 Floresta</option>
+                        <option>🏜️ Deserto</option>
+                        <option>🌋 Vulcão</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <span>Dificuldade</span>
+                    <select id="lobby-diff">
+                        <option>😊 Fácil</option>
+                        <option>😐 Normal</option>
+                        <option>😈 Difícil</option>
+                    </select>
+                </div>
+                <div class="setting-row">
+                    <span>Waves</span>
+                    <select id="lobby-waves">
+                        <option>20 Waves</option>
+                        <option>50 Waves</option>
+                        <option>♾️ Infinito</option>
+                    </select>
+                </div>
+            </div>
+            <div class="lobby-chat">
+                <div class="chat-messages" id="chat-messages">
+                    <p class="system-msg">Bem-vindo ao lobby!</p>
+                </div>
+                <div class="chat-input">
+                    <input type="text" placeholder="Digite uma mensagem..." id="chat-input">
+                    <button onclick="sendChat()">📤</button>
+                </div>
+            </div>
+        </div>
+        <div class="lobby-actions">
+            <button class="action-btn ready-btn" onclick="toggleReady()">✅ Pronto</button>
+            <button class="action-btn start-btn" onclick="startMultiplayer()">🎮 Iniciar Partida</button>
+        </div>
+    </div>
+    
+    <!-- TORRES (Coleção) -->
+    <div id="towers-screen" class="screen">
+        <div class="screen-header">
+            <button class="back-btn" onclick="showScreen('menu-screen')">← Voltar</button>
+            <h2>Suas Torres</h2>
+        </div>
+        <div class="towers-collection">
+            <div class="tower-card" onclick="viewTower('archer')">
+                <canvas class="tower-preview" id="preview-archer"></canvas>
+                <div class="tower-info">
+                    <h3>🏹 Arqueiro</h3>
+                    <div class="tower-level">Nível 5</div>
+                    <div class="tower-stats">
+                        <span>⚔️ 25</span>
+                        <span>🎯 5</span>
+                        <span>⚡ 1.0s</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tower-card" onclick="viewTower('mage')">
+                <canvas class="tower-preview" id="preview-mage"></canvas>
+                <div class="tower-info">
+                    <h3>🧙 Mago</h3>
+                    <div class="tower-level">Nível 3</div>
+                    <div class="tower-stats">
+                        <span>⚔️ 40</span>
+                        <span>🎯 4</span>
+                        <span>⚡ 1.5s</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tower-card" onclick="viewTower('cannon')">
+                <canvas class="tower-preview" id="preview-cannon"></canvas>
+                <div class="tower-info">
+                    <h3>💣 Canhão</h3>
+                    <div class="tower-level">Nível 2</div>
+                    <div class="tower-stats">
+                        <span>⚔️ 80</span>
+                        <span>🎯 3</span>
+                        <span>⚡ 2.5s</span>
+                    </div>
+                </div>
+            </div>
+            <div class="tower-card locked">
+                <div class="tower-preview locked-preview">🔒</div>
+                <div class="tower-info">
+                    <h3>⚡ Tesla</h3>
+                    <p>Desbloqueie no Nível 20</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- LOJA -->
+    <div id="shop-screen" class="screen">
+        <div class="screen-header">
+            <button class="back-btn" onclick="showScreen('menu-screen')">← Voltar</button>
+            <h2>Loja</h2>
+            <div class="shop-currency">
+                <span>💎 <span id="shop-gems">1000</span></span>
+                <span>🪙 <span id="shop-coins">5000</span></span>
+            </div>
+        </div>
+        <div class="shop-tabs">
+            <button class="tab active" onclick="showTab('torres')">Torres</button>
+            <button class="tab" onclick="showTab('skins')">Skins</button>
+            <button class="tab" onclick="showTab('boosts')">Boosts</button>
+            <button class="tab" onclick="showTab('moedas')">Moedas</button>
+        </div>
+        <div class="shop-grid">
+            <div class="shop-item" onclick="buyItem('archer-upgrade')">
+                <div class="item-icon">🏹⬆️</div>
+                <h3>Arqueiro +1</h3>
+                <p>Aumenta nível máximo</p>
+                <button class="buy-btn">💎 500</button>
+            </div>
+            <div class="shop-item" onclick="buyItem('tesla')">
+                <div class="item-icon">⚡</div>
+                <h3>Torre Tesla</h3>
+                <p>Desbloquear torre</p>
+                <button class="buy-btn">💎 2000</button>
+            </div>
+            <div class="shop-item" onclick="buyItem('gold-pack')">
+                <div class="item-icon">🪙</div>
+                <h3>5000 Moedas</h3>
+                <p>Pacote de ouro</p>
+                <button class="buy-btn">💎 100</button>
+            </div>
+            <div class="shop-item" onclick="buyItem('double-xp')">
+                <div class="item-icon">✨</div>
+                <h3>2x XP (1h)</h3>
+                <p>Dobra experiência</p>
+                <button class="buy-btn">💎 50</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- OPÇÕES -->
+    <div id="settings-screen" class="screen">
+        <div class="screen-header">
+            <button class="back-btn" onclick="showScreen('menu-screen')">← Voltar</button>
+            <h2>Opções</h2>
+        </div>
+        <div class="settings-list">
+            <div class="settings-section">
+                <h3>🔊 Áudio</h3>
+                <div class="setting-item">
+                    <span>Música</span>
+                    <input type="range" min="0" max="100" value="80">
+                </div>
+                <div class="setting-item">
+                    <span>Efeitos Sonoros</span>
+                    <input type="range" min="0" max="100" value="100">
+                </div>
+            </div>
+            <div class="settings-section">
+                <h3>🎮 Gráficos</h3>
+                <div class="setting-item">
+                    <span>Qualidade</span>
+                    <select>
+                        <option>Baixa</option>
+                        <option selected>Média</option>
+                        <option>Alta</option>
+                    </select>
+                </div>
+                <div class="setting-item">
+                    <span>Sombras</span>
+                    <label class="toggle">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+            <div class="settings-section">
+                <h3>📱 Controles</h3>
+                <div class="setting-item">
+                    <span>Vibração</span>
+                    <label class="toggle">
+                        <input type="checkbox" checked id="vibration">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="setting-item">
+                    <span>Sensibilidade</span>
+                    <input type="range" min="1" max="10" value="5">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- TELA DO JOGO 3D -->
     <div id="game-screen" class="screen">
-        <div class="game-header">
-            <div class="game-stat">
-                <span>❤️</span>
-                <span id="game-life">100</span>
-            </div>
-            <div class="game-stat">
-                <span>💰</span>
-                <span id="game-gold">500</span>
-            </div>
-            <div class="game-stat">
-                <span>🌊</span>
-                <span>Wave: <span id="game-wave">1</span></span>
-            </div>
-            <button class="pause-btn" onclick="pauseGame()">⏸️</button>
-        </div>
+        <canvas id="game-canvas"></canvas>
         
-        <div class="game-area" id="game-area">
-            <div class="game-message" id="game-message">
-                Selecione uma torre e toque no mapa para posicionar!
-            </div>
-        </div>
-        
-        <div class="game-footer">
-            <div class="towers-bar">
-                <button class="tower-btn" onclick="selectTower('archer')" id="tower-archer">
-                    <span class="tower-icon">🏹</span>
-                    <span class="tower-price">💰100</span>
-                </button>
-                <button class="tower-btn" onclick="selectTower('mage')" id="tower-mage">
-                    <span class="tower-icon">🧙</span>
-                    <span class="tower-price">💰150</span>
-                </button>
-                <button class="tower-btn" onclick="selectTower('cannon')" id="tower-cannon">
-                    <span class="tower-icon">💣</span>
-                    <span class="tower-price">💰200</span>
-                </button>
-                <button class="tower-btn" onclick="selectTower('ice')" id="tower-ice">
-                    <span class="tower-icon">❄️</span>
-                    <span class="tower-price">💰175</span>
-                </button>
-            </div>
-            
-            <button class="start-wave-btn" onclick="startWave()" id="start-wave-btn">
-                ⚔️ INICIAR WAVE
-            </button>
-        </div>
-    </div>
-    
-    <!-- MODAL DE PAUSE -->
-    <div id="pause-modal" class="modal">
-        <div class="modal-content">
-            <h2>⏸️ Pausado</h2>
-            <button class="modal-btn" onclick="resumeGame()">▶️ Continuar</button>
-            <button class="modal-btn" onclick="restartGame()">🔄 Reiniciar</button>
-            <button class="modal-btn" onclick="goToMenu()">🏠 Menu</button>
-        </div>
-    </div>
-    
-    <!-- MODAL DE LOJA -->
-    <div id="shop-modal" class="modal">
-        <div class="modal-content shop-content">
-            <h2>🛒 Loja</h2>
-            <div class="shop-items">
-                <div class="shop-item" onclick="buyItem('gold')">
-                    <span class="shop-icon">💰</span>
-                    <span class="shop-name">500 Ouro</span>
-                    <span class="shop-price">💎 50</span>
-                </div>
-                <div class="shop-item" onclick="buyItem('life')">
-                    <span class="shop-icon">❤️</span>
-                    <span class="shop-name">+50 Vida</span>
-                    <span class="shop-price">💎 30</span>
-                </div>
-                <div class="shop-item" onclick="buyItem('power')">
-                    <span class="shop-icon">⚡</span>
-                    <span class="shop-name">2x Dano</span>
-                    <span class="shop-price">💎 100</span>
+        <!-- HUD Superior -->
+        <div class="game-hud-top">
+            <div class="hud-left">
+                <div class="hud-item life">
+                    <span>❤️</span>
+                    <div class="hud-bar">
+                        <div class="hud-bar-fill" id="life-bar"></div>
+                    </div>
+                    <span id="life-value">100</span>
                 </div>
             </div>
-            <button class="modal-btn close-btn" onclick="closeShop()">✖️ Fechar</button>
-        </div>
-    </div>
-    
-    <!-- MODAL DE OPÇÕES -->
-    <div id="settings-modal" class="modal">
-        <div class="modal-content">
-            <h2>⚙️ Opções</h2>
-            <div class="setting-item">
-                <span>🔊 Som</span>
-                <label class="switch">
-                    <input type="checkbox" id="sound-toggle" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <div class="setting-item">
-                <span>📳 Vibração</span>
-                <label class="switch">
-                    <input type="checkbox" id="vibration-toggle" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-            <button class="modal-btn close-btn" onclick="closeSettings()">✖️ Fechar</button>
-        </div>
-    </div>
-
-    <script src="script.js"></script>
-</body>
-</html>
+            <div class="hud-center">
+                <div class="wave-display">
+                    <span class="wave-label">WAVE</span>
+                    <span class="wave-number" id="wave-number">1</span>
+                </div>
+                <div class="enemies-count">
+                    👹 <span id="enemies-count">0</span> restantes
+           
